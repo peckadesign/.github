@@ -1,7 +1,7 @@
 {
   "name": "PeckaDesign PHP Package CI",
   "description": "PeckaDesign PHP Package CI workflow template.",
-  "iconName": "example-icon",
+  "iconName": "pecka-logo",
   "categories": [
     "PHP"
   ]
