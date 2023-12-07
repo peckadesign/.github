@@ -1,0 +1,71 @@
+name: Split Monorepo
+
+jobs:
+  provide_packages_json:
+    # see json juggling: https://docs.github.com/en/free-pro-team@latest/actions/reference/context-and-expression-syntax-for-github-actions#example-6
+    # see https://stackoverflow.com/a/62953566/1348344
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      # required for matrix of packages set
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.1
+          coverage: none
+
+      - name: Secret export
+        run: echo '${{ secrets.COMPOSER_AUTH }}' > $GITHUB_WORKSPACE/auth.json
+
+      - name: Composer
+        uses: ramsey/composer-install@v2
+
+      # get package json list
+      - id: output_data
+        run: echo "matrix=$(vendor/bin/monorepo-builder packages-json --exclude-package p7sandbox)" >> $GITHUB_OUTPUT
+
+    # this step is needed, so the output gets to the next defined job
+    outputs:
+      matrix: ${{ steps.output_data.outputs.matrix }}
+
+  split_monorepo:
+    needs: provide_packages_json
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{fromJson(needs.provide_packages_json.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@v3
+
+      # no tag
+      - if: "!startsWith(github.ref, 'refs/tags/')"
+        # Uses an action in the root directory
+        name: Monorepo Split of ${{ matrix.package }}
+        uses: symplify/github-action-monorepo-split@v2.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_WORKFLOW }}
+        with:
+          package_directory: 'packages/${{ matrix.package }}'
+          repository_organization: 'peckadesign'
+          repository_name: '${{ matrix.package }}'
+          user_name: "GitHub Action"
+          user_email: "action@github.com"
+          branch: "master"
+
+      # with tag
+      - if: "startsWith(github.ref, 'refs/tags/')"
+        # Uses an action in the root directory
+        name: Monorepo Tagged Split of ${{ matrix.package }}
+        uses: symplify/github-action-monorepo-split@v2.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_WORKFLOW }}
+        with:
+          tag: ${GITHUB_REF#refs/tags/}
+
+          package_directory: 'packages/${{ matrix.package }}'
+          repository_organization: 'peckadesign'
+          repository_name: '${{ matrix.package }}'
+          user_name: "GitHub Action"
+          user_email: "action@github.com"
+          branch: "master"
