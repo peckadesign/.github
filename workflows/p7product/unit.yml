@@ -1,0 +1,29 @@
+name: Unit tests
+
+on:
+  workflow_call:
+    php:
+      required: false
+      type: string
+      default: "8.1"
+jobs:
+  unit:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    name: Unit testy
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "${{ inputs.php }}"
+
+      - name: Secret export
+        run: echo '${{ secrets.COMPOSER_AUTH }}' > $GITHUB_WORKSPACE/auth.json
+
+      - name: Composer
+        uses: ramsey/composer-install@v2
+
+      - name: Unit testy
+        run: make unit
