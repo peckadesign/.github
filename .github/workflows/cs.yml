@@ -2,10 +2,11 @@ name: CodingStandard
 
 on:
   workflow_call:
-    php:
-      required: false
-      type: string
-      default: "8.1"
+    inputs:
+      php:
+        required: false
+        type: string
+        default: "8.1"
 jobs:
   cs:
     timeout-minutes: 10
