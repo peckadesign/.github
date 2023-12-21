@@ -12,6 +12,11 @@ on:
         description: 'Repository'
         required: true
         type: string
+      force:
+        description: 'force push'
+        required: false
+        type: boolean
+        default: false
     secrets:
       gh-token:
         required: true
@@ -35,4 +40,5 @@ jobs:
         with:
           organization: ${{ inputs.organization }}
           package: ${{ inputs.package }}
+          force: ${{ inputs.force }}
           gh-token: ${{ secrets.gh-token }}
