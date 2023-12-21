@@ -1,0 +1,28 @@
+name: Split Monorepo v2
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
+
+concurrency:
+  group: split_monorepo-${{ github.ref_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  split-branch:
+    uses: peckadesign/.github/.github/workflows/split_monorepo.yaml@master
+    name: Split
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - package-data-exchange
+          - package-sdk
+    with:
+      package: ${{ matrix.package }}
+      organization: "peckadesign"
+    secrets:
+      gh-token: ${{ secrets.ACTIONS_WORKFLOW }}
