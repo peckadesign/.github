@@ -22,7 +22,7 @@ echo "Init environment"
 if [[ "$FORCE" == true ]]; then
   PUSH_OPTS="--force"
 else
-  PUSH_OPTS=""
+  PUSH_OPTS="--tags"
 fi
 
 cd ${DIR_PWD}
@@ -41,6 +41,5 @@ git filter-repo --subdirectory-filter packages/${PACKAGE} --force
 echo "git push github.com/${ORGANIZATION}/${PACKAGE} ${BRANCH} --dry-run ${PUSH_OPTS} --verbose"
 git push "${URL}.git" ${BRANCH} --dry-run ${PUSH_OPTS} --verbose
 
-echo "git push"
+echo "git push github.com/${ORGANIZATION}/${PACKAGE} ${BRANCH} ${PUSH_OPTS} --verbose"
 git push "${URL}.git" ${BRANCH} ${PUSH_OPTS} --verbose
-git push "${URL}.git" ${BRANCH} --tags --verbose
