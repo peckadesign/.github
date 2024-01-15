@@ -38,7 +38,7 @@ cd ${DIR_PWD}/${TMP}/${PACKAGE}
 echo "git filter-repo --subdirectory-filter packages/${PACKAGE} --force"
 git filter-repo --subdirectory-filter packages/${PACKAGE} --force
 
-echo "git push dry-run"
+echo "git push github.com/${ORGANIZATION}/${PACKAGE} ${BRANCH} --dry-run ${PUSH_OPTS} --verbose"
 git push "${URL}.git" ${BRANCH} --dry-run ${PUSH_OPTS} --verbose
 
 echo "git push"
