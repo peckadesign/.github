@@ -27,6 +27,22 @@ jobs:
     name: Creating release
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.gh-token }}
+
+      - name: Get the tag branch
+        id: check_branch
+        # 1. Get the list of branches ref where this tag exists
+        # 2. Remove 'origin/' from that result
+        # 3. Put that string in output
+        # => We can now use function 'contains(list, item)''
+        run: |
+          raw=$(git branch -r --contains ${{ inputs.tag }})
+          branch="$(echo ${raw//origin\//} | tr -d '\n')"
+          echo "branch=$branch" >> $GITHUB_OUTPUT
+          echo "Branches where this tag exists : $branch"
       - name: Draft release
         uses: release-drafter/release-drafter@v5
         id: draft_release
@@ -37,5 +53,6 @@ jobs:
           disable-autolabeler: true
           latest: ${{ inputs.latest }}
           publish: ${{ inputs.publish }}
+          commitish: ${{ steps.check_branch.outputs.branch }}
         env:
           GITHUB_TOKEN: ${{ secrets.gh-token }}
