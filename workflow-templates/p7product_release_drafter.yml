@@ -1,0 +1,22 @@
+## Workflow pro P7products
+name: Publish release v2
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.0' # Triggered only for major + minor tags
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    uses: peckadesign/.github/.github/workflows/p7-release_drafter_on_call.yaml@master
+    name: Creating release
+    with:
+      tag: ${{ github.ref_name }}
+      latest: true
+      publish: true
+    secrets:
+      gh-token: ${{ secrets.ACTIONS_WORKFLOW }} # monorepo usage note: For split sub-packages, you need to enable access scope "workflow (Update GitHub Action workflows)" for access token.
