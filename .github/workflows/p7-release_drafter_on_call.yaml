@@ -1,0 +1,41 @@
+name: Release drafter (P7)
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: Tag
+        required: true
+        type: string
+      latest:
+        description: Latest
+        required: false
+        type: boolean
+        default: false
+      publish:
+        description: Auto Publish
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      gh-token:
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    name: Creating release
+    timeout-minutes: 5
+    steps:
+      - name: Draft release
+        uses: release-drafter/release-drafter@v5
+        id: draft_release
+        with:
+          config-name: p7_release_drafter_config.yaml
+          tag: ${{ inputs.tag }}
+          version: v${{ inputs.tag }}
+          disable-autolabeler: true
+          latest: ${{ inputs.latest }}
+          publish: ${{ inputs.publish }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.gh-token }}
