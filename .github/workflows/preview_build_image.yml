@@ -35,7 +35,36 @@ on:
         required: true
 
 jobs:
+  assert:
+    runs-on: [ self-hosted, k8s-gnome-fast ]
+    name: Assert required inputs
+    timeout-minutes: 5
+    steps:
+      - name: Check for Secrets and Inputs
+        id: inputs-check
+        shell: bash
+        run: |
+          if [ "${{ secrets.REGISTRY_URL }}" == '' ]; then
+            echo "is-valid=false" >> $GITHUB_OUTPUT;
+            echo "msg=REGISTRY_URL" >> $GITHUB_OUTPUT;
+          elif [ "${{ secrets.HTTP_PROXY_AUTH }}" == '' ]; then
+            echo "is-valid=false" >> $GITHUB_OUTPUT;
+            echo "msg=HTTP_PROXY_AUTH" >> $GITHUB_OUTPUT;
+          elif [ "${{ inputs.project }}" == '' ]; then
+            echo "is-valid=false" >> $GITHUB_OUTPUT;
+            echo "msg=projectID" >> $GITHUB_OUTPUT;
+          else
+            echo "is-valid=true" >> $GITHUB_OUTPUT;
+            echo "msg=" >> $GITHUB_OUTPUT;
+          fi
+      - name: Result
+        if: ${{ steps.inputs-check.outputs.is-valid != 'true' }}
+        shell: bash
+        run: |
+          echo "::error Not valid input ${{ steps.inputs-check.outputs.msg}}"
+          exit 1
   build:
+    needs: assert
     timeout-minutes: 15
     runs-on: [ k8s-gnome ]
     name: Build and push container image

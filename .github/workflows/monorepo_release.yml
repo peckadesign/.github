@@ -13,7 +13,30 @@ on:
           - 'minor'
 
 jobs:
+  assert:
+    runs-on: ubuntu-latest
+    name: Assert required inputs
+    timeout-minutes: 5
+    steps:
+      - name: Check for Secrets and Inputs
+        id: inputs-check
+        shell: bash
+        run: |
+          if [ "${{ inputs.version }}" == '' ]; then
+            echo "is-valid=false" >> $GITHUB_OUTPUT;
+            echo "msg=version" >> $GITHUB_OUTPUT;
+          else
+            echo "is-valid=true" >> $GITHUB_OUTPUT;
+            echo "msg=" >> $GITHUB_OUTPUT;
+          fi
+      - name: Result
+        if: ${{ steps.inputs-check.outputs.is-valid != 'true' }}
+        shell: bash
+        run: |
+          echo "::error Not valid input ${{ steps.inputs-check.outputs.msg}}"
+          exit 1
   release:
+    needs: assert
     timeout-minutes: 10
     runs-on: ubuntu-latest
     name: Release
