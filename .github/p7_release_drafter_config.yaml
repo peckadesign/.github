@@ -2,6 +2,9 @@ change-template: '- $TITLE (@$AUTHOR, PR #$NUMBER)'
 name-template: 'v$RESOLVED_VERSION'
 tag-template: 'v$RESOLVED_VERSION'
 categories:
+  - title: '⚠️ BC Breaks'
+    labels:
+      - 'BC break'
   - title: '🚀 Features'
     collapse-after: 8
     labels:
