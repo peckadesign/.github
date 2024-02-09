@@ -21,9 +21,38 @@ on:
       gh-token:
         required: true
 jobs:
+  assert:
+    runs-on: [ self-hosted, k8s-gnome-fast ]
+    name: Assert required inputs
+    timeout-minutes: 5
+    steps:
+      - name: Check for Secrets and Inputs
+        id: inputs-check
+        shell: bash
+        run: |
+          if [ "${{ secrets.gh-token }}" == '' ]; then
+            echo "is-valid=false" >> $GITHUB_OUTPUT;
+            echo "msg=gh-token" >> $GITHUB_OUTPUT;
+          elif [ "${{ inputs.package }}" == '' ]; then
+            echo "is-valid=false" >> $GITHUB_OUTPUT;
+            echo "msg=repository" >> $GITHUB_OUTPUT;
+          elif [ "${{ inputs.organization }}" == '' ]; then
+            echo "is-valid=false" >> $GITHUB_OUTPUT;
+            echo "msg=organization" >> $GITHUB_OUTPUT;
+          else
+            echo "is-valid=true" >> $GITHUB_OUTPUT;
+            echo "msg=" >> $GITHUB_OUTPUT;
+          fi
+      - name: Result
+        if: ${{ steps.inputs-check.outputs.is-valid != 'true' }}
+        shell: bash
+        run: |
+          echo "::error Not valid input ${{ steps.inputs-check.outputs.msg}}"
+          exit 1
   split-branch:
+    needs: assert
     name: Split branch
-    runs-on: ubuntu-latest
+    runs-on: [ k8s-gnome ]
 
     steps:
       - uses: actions/checkout@v4
