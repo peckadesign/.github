@@ -12,11 +12,11 @@ concurrency:
 
 jobs:
   release:
-    uses: peckadesign/.github/.github/workflows/p7-release_drafter_on_call.yaml@master
+    uses: peckadesign/.github/.github/workflows/p7-release_drafter_on_call.yaml@v1
     name: Creating release
     with:
       tag: ${{ github.ref_name }}
       latest: true
       publish: true
     secrets:
-      gh-token: ${{ secrets.ACTIONS_WORKFLOW }} # monorepo usage note: For split sub-packages, you need to enable access scope "workflow (Update GitHub Action workflows)" for access token.
+      gh-token: # GITHUB Token. Monorepo usage note: For split sub-packages, you need to enable access scope "workflow (Update GitHub Action workflows)" for access token.

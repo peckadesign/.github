@@ -11,11 +11,6 @@ on:
         options:
           - 'true'
           - 'false'
-  push:
-    branches:
-      - master
-    tags:
-      - '*'
 
 concurrency:
   group: split_monorepo-${{ github.ref_name }}-${{ github.ref }}
@@ -23,7 +18,7 @@ concurrency:
 
 jobs:
   split-branch:
-    uses: peckadesign/.github/.github/workflows/split_monorepo.yaml@master
+    uses: peckadesign/.github/.github/workflows/split_monorepo.yaml@v1
     name: Split
     strategy:
       fail-fast: false
@@ -36,4 +31,4 @@ jobs:
       organization: "peckadesign"
       force: ${{ inputs.force == 'true' }}
     secrets:
-      gh-token: ${{ secrets.ACTIONS_WORKFLOW }}
+      gh-token: # GITHUB Token

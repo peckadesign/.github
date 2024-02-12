@@ -8,12 +8,12 @@ on:
       - '*'
 
 concurrency:
-  group: split_monorepo-${{ github.ref_name }}-${{ github.ref }}
+  group: split_monorepo-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
   split-branch:
-    uses: peckadesign/.github/.github/workflows/split_monorepo.yaml@master
+    uses: peckadesign/.github/.github/workflows/split_monorepo.yaml@v1
     name: Split
     strategy:
       fail-fast: false
@@ -25,4 +25,4 @@ jobs:
       package: ${{ matrix.package }}
       organization: "peckadesign"
     secrets:
-      gh-token: ${{ secrets.ACTIONS_WORKFLOW }}
+      gh-token: # GITHUB Token
