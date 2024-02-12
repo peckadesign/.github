@@ -52,7 +52,7 @@ jobs:
   split-branch:
     needs: assert
     name: Split branch
-    runs-on: [ k8s-gnome ]
+    runs-on: [ self-hosted, k8s-gnome ]
 
     steps:
       - uses: actions/checkout@v4
