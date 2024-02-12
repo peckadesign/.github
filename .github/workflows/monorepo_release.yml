@@ -13,10 +13,10 @@ on:
           - 'minor'
 
 jobs:
-  assert:
+  release:
+    timeout-minutes: 10
     runs-on: ubuntu-latest
-    name: Assert required inputs
-    timeout-minutes: 5
+    name: Release
     steps:
       - name: Check for Secrets and Inputs
         id: inputs-check
@@ -35,12 +35,6 @@ jobs:
         run: |
           echo "::error Not valid input ${{ steps.inputs-check.outputs.msg}}"
           exit 1
-  release:
-    needs: assert
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    name: Release
-    steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
