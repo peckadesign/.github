@@ -24,7 +24,7 @@ jobs:
   split-branch:
     name: Split branch
     timeout-minutes: 15
-    runs-on: [ self-hosted, k8s-gnome ]
+    runs-on: ubuntu-latest
     steps:
       - name: Check for Secrets and Inputs
         id: inputs-check
@@ -59,7 +59,7 @@ jobs:
       - run: git config --global user.email "action@github.com"
 
       - name: Split
-        uses: "peckadesign/.github/.github/actions/split-monorepo@master"
+        uses: "peckadesign/.github/.github/actions/split-monorepo@v1"
         with:
           organization: ${{ inputs.organization }}
           package: ${{ inputs.package }}
