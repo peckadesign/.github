@@ -47,7 +47,7 @@ jobs:
 
   release:
     needs: assert
-    runs-on: [ k8s-gnome ]
+    runs-on: [ self-hosted, k8s-gnome-fast ]
     name: Creating release
     timeout-minutes: 5
     steps:
