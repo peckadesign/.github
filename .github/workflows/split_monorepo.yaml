@@ -21,10 +21,10 @@ on:
       gh-token:
         required: true
 jobs:
-  assert:
-    runs-on: [ self-hosted, k8s-gnome-fast ]
-    name: Assert required inputs
-    timeout-minutes: 5
+  split-branch:
+    name: Split branch
+    timeout-minutes: 15
+    runs-on: [ self-hosted, k8s-gnome ]
     steps:
       - name: Check for Secrets and Inputs
         id: inputs-check
@@ -49,12 +49,6 @@ jobs:
         run: |
           echo "::error Not valid input ${{ steps.inputs-check.outputs.msg}}"
           exit 1
-  split-branch:
-    needs: assert
-    name: Split branch
-    runs-on: [ self-hosted, k8s-gnome ]
-
-    steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
