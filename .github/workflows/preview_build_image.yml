@@ -13,6 +13,11 @@ on:
         required: false
         type: string
 
+      namespace:
+        description: Namespace
+        required: true
+        type: string
+
       project:
         description: Project ID
         required: true
@@ -53,6 +58,9 @@ jobs:
           elif [ "${{ secrets.HTTP_PROXY_AUTH }}" == '' ]; then
             echo "is-valid=false" >> $GITHUB_OUTPUT;
             echo "msg=HTTP_PROXY_AUTH" >> $GITHUB_OUTPUT;
+          elif [ "${{ inputs.namespace }}" == '' ]; then
+            echo "is-valid=false" >> $GITHUB_OUTPUT;
+            echo "msg=namespace" >> $GITHUB_OUTPUT;
           elif [ "${{ inputs.project }}" == '' ]; then
             echo "is-valid=false" >> $GITHUB_OUTPUT;
             echo "msg=projectID" >> $GITHUB_OUTPUT;
@@ -87,7 +95,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          tags: ${{ secrets.REGISTRY_URL }}/peckadesign/${{ inputs.project }}:${{ inputs.image_tag }}
+          tags: ${{ secrets.REGISTRY_URL }}/${{ inputs.namespace }}/${{ inputs.project }}:${{ inputs.image_tag }}
           push: true
           build-args: |
             COMPOSER_AUTH=${{ secrets.COMPOSER_AUTH }}
