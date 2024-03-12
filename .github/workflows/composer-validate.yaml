@@ -1,0 +1,49 @@
+name: Composer validate
+
+on:
+  workflow_call:
+    inputs:
+      php_version:
+        description: 'PHP Version'
+        default: '8.1'
+        required: true
+        type: string
+      extensions:
+        description: 'PHP extensions'
+        default: ''
+        required: false
+        type: string
+    secrets:
+      gh-token:
+        required: true
+
+jobs:
+  composer:
+    name: "Composer validate"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          clean: false
+          fetch-depth: 0
+
+      - uses: technote-space/get-diff-action@v6
+        with:
+          FILES: |
+            composer.json
+            composer.lock
+
+      - name: "Install PHP"
+        if: env.GIT_DIFF && env.MATCHED_FILES
+        uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "${{ inputs.php_version }}"
+          extensions: "${{ inputs.extensions }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.gh-token }}
+
+      - name: Composer validate
+        if: env.GIT_DIFF && env.MATCHED_FILES
+        run: |
+          composer install --no-progress
+          composer validate
