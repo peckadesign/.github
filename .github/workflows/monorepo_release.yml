@@ -1,4 +1,5 @@
 name: Monorepo release
+run-name: Monorepo release - ${{ inputs.version }} version
 
 on:
   workflow_dispatch:
@@ -55,5 +56,17 @@ jobs:
       - name: Composer
         uses: ramsey/composer-install@v2
 
+      - name: Stage Check
+        id: stage
+        shell: bash
+        run: |
+          if [ "${{ inputs.version }}" == 'patch' ]; then
+            echo "stage=patch" >> $GITHUB_OUTPUT;
+          elif [ "${{ inputs.version }}" == 'minor' ]; then
+            echo "stage=release" >> $GITHUB_OUTPUT;
+          elif [ "${{ inputs.version }}" == 'major' ]; then
+            echo "stage=release" >> $GITHUB_OUTPUT;
+          fi
+
       - name: Release
-        run: vendor/bin/monorepo-builder release ${{ inputs.version }}
+        run: vendor/bin/monorepo-builder release ${{ inputs.version }} --stage ${{ steps.stage.outputs.stage}}
