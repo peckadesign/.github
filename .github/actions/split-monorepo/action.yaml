@@ -12,6 +12,10 @@ inputs:
     description: 'Force push'
     required: false
     default: 'false'
+  push-tags:
+    description: 'Push tags'
+    required: false
+    default: 'false'
   gh-token:
     required: true
     description: "GitHub token"
@@ -28,4 +32,4 @@ runs:
       shell: "bash"
       run: |
         git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | xargs -L1 git config --unset-all
-        bash ${{github.action_path}}/split-repositories.sh "${{ inputs.gh-token }}" "${{ inputs.package }}" ${{ inputs.organization }} "${{ github.ref_name }}" ${{ inputs.force == 'true' }}
+        bash ${{github.action_path}}/split-repositories.sh "${{ inputs.gh-token }}" "${{ inputs.package }}" ${{ inputs.organization }} "${{ github.ref_name }}" ${{ inputs.force == 'true' }} ${{ inputs.push-tags == 'true' }}

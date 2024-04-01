@@ -30,5 +30,6 @@ jobs:
       package: ${{ matrix.package }}
       organization: "peckadesign"
       force: ${{ inputs.force == 'true' }}
+      push-tags:  ${{ github.ref != 'refs/heads/master' }}
     secrets:
       gh-token: # GITHUB Token

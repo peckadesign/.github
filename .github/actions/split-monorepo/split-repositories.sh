@@ -7,6 +7,7 @@ PACKAGE=$2
 ORGANIZATION=$3
 BRANCH=$4
 FORCE=${5:-false}
+PUSH_TAG=${6:-false}
 
 TMP="tmp_split/${RANDOM}"
 URL="https://${GH_TOKEN}@github.com/${ORGANIZATION}/${PACKAGE}"
@@ -19,10 +20,12 @@ echo "Monorepo Split – ${PACKAGE}"
 
 echo "Init environment"
 
+PUSH_OPTS=""
 if [[ "$FORCE" == true ]]; then
-  PUSH_OPTS="--force"
-else
-  PUSH_OPTS="--tags"
+  PUSH_OPTS="${PUSH_OPTS} --force"
+fi
+if [[ "$PUSH_TAG" == true ]]; then
+  PUSH_OPTS="${PUSH_OPTS} --tags"
 fi
 
 cd ${DIR_PWD}

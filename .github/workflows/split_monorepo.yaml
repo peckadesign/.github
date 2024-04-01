@@ -17,6 +17,11 @@ on:
         required: false
         type: boolean
         default: false
+      push-tags:
+        description: 'push tags'
+        required: false
+        type: boolean
+        default: false
     secrets:
       gh-token:
         required: true
@@ -64,4 +69,5 @@ jobs:
           organization: ${{ inputs.organization }}
           package: ${{ inputs.package }}
           force: ${{ inputs.force }}
+          push-tags: ${{ inputs.push-tags }}
           gh-token: ${{ secrets.gh-token }}
