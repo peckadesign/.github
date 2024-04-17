@@ -32,14 +32,14 @@ cd ${DIR_PWD}
 echo "mkdir -p ${DIR_PWD}/${TMP}/${PACKAGE}"
 mkdir -p ${DIR_PWD}/${TMP}/${PACKAGE}
 
-echo "git clone --bare .git ${DIR_PWD}/${TMP}/${PACKAGE}"
-git clone --bare .git ${DIR_PWD}/${TMP}/${PACKAGE}
+echo "git clone --bare --no-local .git ${DIR_PWD}/${TMP}/${PACKAGE}"
+git clone --bare --no-local .git ${DIR_PWD}/${TMP}/${PACKAGE}
 
 echo "cd ${DIR_PWD}/${TMP}/${PACKAGE}"
 cd ${DIR_PWD}/${TMP}/${PACKAGE}
 
-echo "git filter-repo --subdirectory-filter packages/${PACKAGE} --force"
-git filter-repo --subdirectory-filter packages/${PACKAGE} --force
+echo "git filter-repo --subdirectory-filter packages/${PACKAGE}"
+git filter-repo --subdirectory-filter packages/${PACKAGE}
 
 echo "git push github.com/${ORGANIZATION}/${PACKAGE} ${BRANCH} --dry-run ${PUSH_OPTS} --verbose"
 git push "${URL}.git" ${BRANCH} --dry-run ${PUSH_OPTS} --verbose
