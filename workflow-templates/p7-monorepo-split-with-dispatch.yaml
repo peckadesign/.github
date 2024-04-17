@@ -11,6 +11,13 @@ on:
         options:
           - 'true'
           - 'false'
+      package:
+        description: 'Název package'
+        required: true
+        type: choice
+        options: #Je potřeba definovat konkrétní balíček pro které se spouští split
+          - 'package-sdk'
+          - 'package-admin'
 
 concurrency:
   group: split_monorepo-${{ github.ref_name }}-${{ github.ref }}
@@ -20,14 +27,8 @@ jobs:
   split-branch:
     uses: peckadesign/.github/.github/workflows/split_monorepo.yaml@v1
     name: Split
-    strategy:
-      fail-fast: false
-      matrix:
-        package:
-          - package-data-exchange
-          - package-sdk
     with:
-      package: ${{ matrix.package }}
+      package:  ${{ inputs.package }}
       organization: "peckadesign"
       force: ${{ inputs.force == 'true' }}
       push-tags:  ${{ github.ref != 'refs/heads/master' }}
