@@ -13,6 +13,11 @@ on:
         default: ''
         required: false
         type: string
+      monorepo-validate:
+        description: 'Monorepo-builder validate'
+        required: false
+        type: boolean
+        default: true
     secrets:
       gh-token:
         required: true
@@ -46,3 +51,13 @@ jobs:
         if: env.GIT_DIFF && env.MATCHED_FILES
         run: |
           composer validate
+
+      - name: Composer Install
+        if: ${{ inputs.monorepo-validate == true }}
+        uses: ramsey/composer-install@v2
+        with:
+          composer-options: "--ignore-platform-reqs"
+
+      - name: Monorepo-builder validate
+        if: ${{ inputs.monorepo-validate  == true }}
+        run: vendor/bin/monorepo-builder validate
