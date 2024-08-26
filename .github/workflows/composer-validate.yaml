@@ -55,8 +55,6 @@ jobs:
       - name: Composer Install
         if: ${{ env.GIT_DIFF && env.MATCHED_FILES && inputs.monorepo-validate == true }}
         uses: ramsey/composer-install@v2
-        with:
-          composer-options: "--ignore-platform-reqs"
 
       - name: Monorepo-builder validate
         if: ${{ env.GIT_DIFF && env.MATCHED_FILES && inputs.monorepo-validate == true }}
