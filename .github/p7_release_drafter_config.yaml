@@ -5,6 +5,14 @@ categories:
   - title: '⚠️ BC Breaks'
     labels:
       - 'BC break'
+      - 'BCbreak'
+      - 'bcbreak'
+  - title: '👋️ Vyžaduje pozornost nebo ruční zásah'
+    labels:
+      - 'warning'
+  - title: '🐙 Obsahuje migrace'
+    labels:
+      - 'migrations'
   - title: '🚀 Features'
     collapse-after: 8
     labels:
