@@ -8,6 +8,16 @@ on:
         description: 'Version'
         required: true
         type: string
+      php_version:
+        description: 'PHP Version'
+        default: '8.1'
+        required: false
+        type: string
+      extensions:
+        description: 'PHP extensions'
+        default: ''
+        required: false
+        type: string
     secrets:
       gh-token:
         required: true
@@ -29,14 +39,13 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: "${{ inputs.php_version }}"
+          extensions: "${{ inputs.extensions }}"
         env:
           GITHUB_TOKEN: ${{ secrets.gh-token }}
 
       - name: Composer
         uses: ramsey/composer-install@v2
-        with:
-          composer-options: "--ignore-platform-reqs"
 
       - name: Stage Check
         id: stage
