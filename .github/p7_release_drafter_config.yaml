@@ -10,9 +10,11 @@ categories:
   - title: '👋️ Vyžaduje pozornost nebo ruční zásah'
     labels:
       - 'warning'
+      - 'Warning'
   - title: '🐙 Obsahuje migrace'
     labels:
       - 'migrations'
+      - 'Migrations'
   - title: '🚀 Features'
     collapse-after: 8
     labels:
