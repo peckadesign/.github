@@ -59,3 +59,38 @@ jobs:
       - name: Monorepo-builder validate
         if: ${{ env.GIT_DIFF && env.MATCHED_FILES && inputs.monorepo-validate == true }}
         run: vendor/bin/monorepo-builder validate
+
+      - name: Kontrola commit message
+        run: |
+          num=0
+          total=$((${{ github.event.pull_request.commits }} - 1))
+
+          for i in $(seq 0 $total); do
+            message=$(git log --format=format:%B --no-merges -n1 --skip=$i)
+            lowerMessage=$(echo "$message" | awk '{print tolower($0)}')
+
+            if [[ "$lowerMessage" == \!* ]] ||
+               [[ "$lowerMessage" == \ * ]] ||
+               [[ "$lowerMessage" =~ ^fixup ]] ||
+               [[ "$lowerMessage" =~ \!fixup ]] ||
+               [[ "$lowerMessage" =~ ^merge ]] ||
+               [[ "$lowerMessage" =~ ^trigger ]] ||
+               [[ "$lowerMessage" =~ \!squash ]] ||
+               [[ "$lowerMessage" =~ ^squash ]] ||
+               [[ "$lowerMessage" =~ ^drop ]] ||
+               [[ "$lowerMessage" =~ \!drop ]] ||
+               [[ "$lowerMessage" =~ ^skip ]] ||
+               [[ "$lowerMessage" =~ \!skip ]] ||
+               [[ "$lowerMessage" =~ ^noop ]] ||
+               [[ "$lowerMessage" =~ \!noop ]]
+            then
+              if [[ $num == 0 ]]; then
+                echo "Špatná commit message:"
+                echo "----------------------"
+              fi
+
+              echo \`$message\`
+              num=1
+            fi
+          done
+          exit $num
