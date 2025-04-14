@@ -25,7 +25,7 @@ on:
 jobs:
   composer:
     name: "Composer validate"
-    runs-on: [ self-hosted, k8s-gnome-fast ]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
@@ -45,7 +45,6 @@ jobs:
           php-version: "${{ inputs.php_version }}"
           extensions: "${{ inputs.extensions }}"
         env:
-          runner: self-hosted
           GITHUB_TOKEN: ${{ secrets.gh-token }}
 
       - name: Composer validate
