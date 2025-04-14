@@ -40,11 +40,12 @@ jobs:
 
       - name: "Install PHP"
         if: env.GIT_DIFF && env.MATCHED_FILES
-        uses: "shivammathur/setup-php@v2"
+        uses: shivammathur/setup-php@v2
         with:
           php-version: "${{ inputs.php_version }}"
           extensions: "${{ inputs.extensions }}"
         env:
+          runner: self-hosted
           GITHUB_TOKEN: ${{ secrets.gh-token }}
 
       - name: Composer validate
