@@ -69,9 +69,7 @@ jobs:
             message=$(git log --format=format:%B --no-merges -n1 --skip=$i)
             lowerMessage=$(echo "$message" | awk '{print tolower($0)}')
 
-            if [[ "$lowerMessage" == \!* ]] ||
-               [[ "$lowerMessage" == \ * ]] ||
-               [[ "$lowerMessage" =~ ^fixup ]] ||
+            if [[ "$lowerMessage" =~ ^fixup ]] ||
                [[ "$lowerMessage" =~ \!fixup ]] ||
                [[ "$lowerMessage" =~ ^merge ]] ||
                [[ "$lowerMessage" =~ ^trigger ]] ||
