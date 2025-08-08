@@ -1,0 +1,89 @@
+name: Composer validate
+description: Kontrova composeru a commit message pro Pull requesty
+
+inputs:
+  monorepo-validate:
+    description: 'Monorepo-builder validate'
+    required: false
+    default: 'true'
+  gh-token:
+    required: true
+    description: "GitHub token"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check Inputs
+      id: inputs-check
+      if: github.event_name != 'pull_request'
+      shell: bash
+      run: |
+        echo "::error::Only for PullRequest"
+        exit 1
+
+    - uses: actions/checkout@v4
+      with:
+        clean: false
+        fetch-depth: 0
+
+    - name: Mark repo as safe
+      shell: bash
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+    - uses: technote-space/get-diff-action@v6
+      with:
+        FILES: |
+          composer.json
+          composer.lock
+
+    - name: Composer validate
+      shell: bash
+      if: ${{ env.GIT_DIFF && env.MATCHED_FILES }}
+      run: |
+        composer validate
+
+    - name: Composer Install
+      if: ${{ always() && env.GIT_DIFF && env.MATCHED_FILES && inputs.monorepo-validate == 'true' }}
+      uses: ramsey/composer-install@v2
+
+    - name: Monorepo-builder validate
+      shell: bash
+      if: ${{ always() && env.GIT_DIFF && env.MATCHED_FILES && inputs.monorepo-validate == 'true' }}
+      run: vendor/bin/monorepo-builder validate
+
+    - name: Kontrola commit message
+      shell: bash
+      if: always()
+      env:
+        PR_COMMITS: ${{ github.event.pull_request.commits }}
+      run: |
+        num=0
+        total=$(($PR_COMMITS - 1))
+
+        for i in $(seq 0 $total); do
+          message=$(git log --format=format:%B --no-merges -n1 --skip=$i)
+          lowerMessage=$(echo "$message" | awk '{print tolower($0)}')
+
+          if [[ "$lowerMessage" =~ ^fixup ]] ||
+             [[ "$lowerMessage" =~ \!fixup ]] ||
+             [[ "$lowerMessage" =~ ^merge ]] ||
+             [[ "$lowerMessage" =~ ^trigger ]] ||
+             [[ "$lowerMessage" =~ \!squash ]] ||
+             [[ "$lowerMessage" =~ ^squash ]] ||
+             [[ "$lowerMessage" =~ ^drop ]] ||
+             [[ "$lowerMessage" =~ \!drop ]] ||
+             [[ "$lowerMessage" =~ ^skip ]] ||
+             [[ "$lowerMessage" =~ \!skip ]] ||
+             [[ "$lowerMessage" =~ ^noop ]] ||
+             [[ "$lowerMessage" =~ \!noop ]]
+          then
+            if [[ $num == 0 ]]; then
+              echo "Špatná commit message:"
+              echo "----------------------"
+            fi
+
+            echo \`$message\`
+            num=1
+          fi
+        done
+        exit $num
