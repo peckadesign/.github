@@ -1,0 +1,80 @@
+name: Monorepo release
+description: Akce pro vytvoření release pro P7 produkty
+
+inputs:
+  tag:
+    description: Tag
+    required: true
+  latest:
+    description: Latest
+    required: false
+    default: "false"
+  publish:
+    description: Auto Publish
+    required: false
+    default: "false"
+  gh-token:
+    required: true
+    description: "GitHub token"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate inputs
+      id: validate
+      shell: bash
+      run: |
+        if [[ -z "${{ inputs.tag }}" ]]; then
+          echo "::error::Tag must not be empty"
+          exit 1
+        fi
+
+        for var in latest publish; do
+          if [ "$var" = "latest" ]; then
+            val="${{ inputs.latest }}"
+          else
+            val="${{ inputs.publish }}"
+          fi
+          if [[ "$val" != "true" && "$val" != "false" ]]; then
+            echo "::error::Invalid $var value: $val (allowed: true|false)"
+            exit 1
+          fi
+        done
+
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ inputs.gh-token }}
+
+    - name: Set Git user
+      shell: bash
+      run: |
+        git config --local --add safe.directory "$GITHUB_WORKSPACE"
+        git config --local user.name "${{ github.actor }}"
+        git config --local user.email "action@github.com"
+
+    - name: Get the tag branch
+      shell: bash
+      id: check_branch
+      run: |
+        branch=$(git branch -r --contains ${{ inputs.tag }} | head -n1 | sed 's|origin/||')
+        if [[ -z "$branch" ]]; then
+          echo "::error::No branch contains tag ${{ inputs.tag }}"
+          exit 1
+        fi
+        echo "branch=$branch" >> $GITHUB_OUTPUT
+        echo "Branches where this tag exists: $branch"
+
+    - name: Draft release
+      uses: release-drafter/release-drafter@v5
+      id: draft_release
+      with:
+        config-name: actions/p7-release-drafter/p7_config.yaml
+        tag: ${{ inputs.tag }}
+        version: v${{ inputs.tag }}
+        disable-autolabeler: true
+        latest: ${{ inputs.latest == 'true' }}
+        publish: ${{ inputs.publish == 'true' }}
+        commitish: ${{ steps.check_branch.outputs.branch }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.gh-token }}
