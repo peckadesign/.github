@@ -34,7 +34,6 @@ runs:
     - name: Set Git user
       shell: bash
       run: |
-        git config --local --add safe.directory "$GITHUB_WORKSPACE"
         git config --local user.name "${{ github.actor }}"
         git config --local user.email "action@github.com"
 
