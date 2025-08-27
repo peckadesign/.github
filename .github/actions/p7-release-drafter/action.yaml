@@ -49,8 +49,15 @@ runs:
     - name: Set Git user
       shell: bash
       run: |
-        git config --local user.name "${{ github.actor }}"
-        git config --local user.email "action@github.com"
+        # Pokud jsme uvnitř repozitáře, použijeme --local
+        if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+          git config --local user.name "${{ github.actor }}"
+          git config --local user.email "action@github.com"
+        else
+          # Fallback – použijeme globální konfiguraci
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "action@github.com"
+        fi
 
     - name: Get the tag branch
       shell: bash
