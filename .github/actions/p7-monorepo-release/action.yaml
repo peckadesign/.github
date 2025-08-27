@@ -16,11 +16,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ inputs.gh-token }}
-
     - name: Validate dry-run input
       id: dryrun
       shell: bash
@@ -30,6 +25,11 @@ runs:
           true|false) echo "valid=true" >> "$GITHUB_OUTPUT" ;;
           *) echo "::error::Invalid dry-run value: $DRYRUN (allowed: true|false)"; exit 1 ;;
         esac
+
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ inputs.gh-token }}
 
     - name: Set Git user
       shell: bash
