@@ -34,6 +34,8 @@ runs:
     - name: Set Git user
       shell: bash
       run: |
+        # Ošetříme safe.directory (aby Git nehlásil dubious ownership)
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
         # Pokud jsme uvnitř repozitáře, použijeme --local
         if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
           git config --local user.name "${{ github.actor }}"
