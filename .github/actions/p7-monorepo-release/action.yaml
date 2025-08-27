@@ -1,0 +1,68 @@
+name: Monorepo release
+description: Akce pro vytvoření release pro P7 produkty
+
+inputs:
+  version:
+    description: 'Version (patch|minor|major)'
+    required: true
+  gh-token:
+    required: true
+    description: "GitHub token"
+  dry-run:
+    description: "Spustí release v režimu dry-run (true|false)"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ inputs.gh-token }}
+
+    - name: Validate dry-run input
+      id: dryrun
+      shell: bash
+      run: |
+        DRYRUN="${{ inputs.dry-run }}"
+        case "$DRYRUN" in
+          true|false) echo "valid=true" >> "$GITHUB_OUTPUT" ;;
+          *) echo "::error::Invalid dry-run value: $DRYRUN (allowed: true|false)"; exit 1 ;;
+        esac
+
+    - name: Set Git user
+      shell: bash
+      run: |
+        git config --local --add safe.directory "$GITHUB_WORKSPACE"
+        git config --local user.name "${{ github.actor }}"
+        git config --local user.email "action@github.com"
+
+    - name: Composer
+      uses: ramsey/composer-install@v2
+      env:
+        COMPOSER_AUTH: >-
+          {"github-oauth": {"github.com": "${{ inputs.gh-token }}"}}
+
+    - name: Stage Check
+      id: stage
+      shell: bash
+      run: |
+        VERSION="${{ inputs.version }}"
+        case "$VERSION" in
+          patch) echo "stage=patch" >> "$GITHUB_OUTPUT" ;;
+          minor) echo "stage=minor" >> "$GITHUB_OUTPUT" ;;
+          major) echo "stage=major" >> "$GITHUB_OUTPUT" ;;
+          *) echo "::error::Unknown version type: $VERSION"; exit 1 ;;
+        esac
+
+    - name: Release
+      shell: bash
+      run: |
+        CMD="vendor/bin/monorepo-builder release ${{ inputs.version }} --stage ${{ steps.stage.outputs.stage }}"
+        if [ "${{ inputs.dry-run }}" = "true" ]; then
+          CMD="$CMD --dry-run"
+        fi
+        echo "Running: $CMD"
+        eval "$CMD"
+
