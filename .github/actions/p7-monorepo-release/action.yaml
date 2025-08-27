@@ -51,8 +51,8 @@ runs:
         VERSION="${{ inputs.version }}"
         case "$VERSION" in
           patch) echo "stage=patch" >> "$GITHUB_OUTPUT" ;;
-          minor) echo "stage=minor" >> "$GITHUB_OUTPUT" ;;
-          major) echo "stage=major" >> "$GITHUB_OUTPUT" ;;
+          minor) echo "stage=release" >> "$GITHUB_OUTPUT" ;;
+          major) echo "stage=release" >> "$GITHUB_OUTPUT" ;;
           *) echo "::error::Unknown version type: $VERSION"; exit 1 ;;
         esac
 

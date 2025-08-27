@@ -1,0 +1,40 @@
+change-template: '- $TITLE (@$AUTHOR, PR #$NUMBER)'
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+categories:
+  - title: '⚠️ BC Breaks'
+    labels:
+      - 'BC break'
+      - 'BCbreak'
+      - 'bcbreak'
+  - title: '👋️ Vyžaduje pozornost nebo ruční zásah'
+    labels:
+      - 'warning'
+      - 'Warning'
+  - title: '🐙 Obsahuje migrace'
+    labels:
+      - 'migrations'
+      - 'Migrations'
+  - title: '🚀 Features'
+    collapse-after: 8
+    labels:
+      - 'feature'
+      - 'enhancement'
+  - title: '🐛 Bug Fixes'
+    collapse-after: 8
+    labels:
+      - 'fix'
+      - 'bugfix'
+      - 'bug'
+  - title: '🧰 Chore - povýšení Chart version'
+    collapse-after: 8
+    label: 'chore'
+exclude-contributors:
+  - 'action-user'
+change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
+template: |
+  ## What's Changed
+
+  $CHANGES
+
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...$RESOLVED_VERSION
