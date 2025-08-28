@@ -26,6 +26,18 @@ runs:
           *) echo "::error::Invalid dry-run value: $DRYRUN (allowed: true|false)"; exit 1 ;;
         esac
 
+    - name: Stage Check
+      id: stage
+      shell: bash
+      run: |
+        VERSION="${{ inputs.version }}"
+        case "$VERSION" in
+          patch) echo "stage=patch" >> "$GITHUB_OUTPUT" ;;
+          minor) echo "stage=release" >> "$GITHUB_OUTPUT" ;;
+          major) echo "stage=release" >> "$GITHUB_OUTPUT" ;;
+          *) echo "::error::Unknown version type: $VERSION"; exit 1 ;;
+        esac
+
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
@@ -46,23 +58,16 @@ runs:
           git config --global user.email "action@github.com"
         fi
 
+    - name: Set Git user
+      shell: bash
+      run: |
+        composer config -- github-oauth.github.com "${{ inputs.gh-token }}"
+
     - name: Composer
       uses: ramsey/composer-install@v2
       env:
         COMPOSER_AUTH: >-
           {"github-oauth": {"github.com": "${{ inputs.gh-token }}"}}
-
-    - name: Stage Check
-      id: stage
-      shell: bash
-      run: |
-        VERSION="${{ inputs.version }}"
-        case "$VERSION" in
-          patch) echo "stage=patch" >> "$GITHUB_OUTPUT" ;;
-          minor) echo "stage=release" >> "$GITHUB_OUTPUT" ;;
-          major) echo "stage=release" >> "$GITHUB_OUTPUT" ;;
-          *) echo "::error::Unknown version type: $VERSION"; exit 1 ;;
-        esac
 
     - name: Release
       shell: bash
@@ -73,4 +78,3 @@ runs:
         fi
         echo "Running: $CMD"
         eval "$CMD"
-
