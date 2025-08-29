@@ -25,6 +25,7 @@ runs:
       with:
         clean: false
         fetch-depth: 0
+        token: ${{ inputs.gh-token }}
 
     - name: Mark repo as safe
       shell: bash
@@ -45,6 +46,9 @@ runs:
     - name: Composer Install
       if: ${{ always() && env.GIT_DIFF && env.MATCHED_FILES && inputs.monorepo-validate == 'true' }}
       uses: ramsey/composer-install@v2
+      env:
+        COMPOSER_AUTH: >-
+          {"github-oauth": {"github.com": "${{ inputs.gh-token }}"}}
 
     - name: Monorepo-builder validate
       shell: bash
