@@ -26,9 +26,17 @@ categories:
       - 'fix'
       - 'bugfix'
       - 'bug'
-  - title: '🧰 Chore - povýšení Chart version'
+  - title: '🧰 Chore'
     collapse-after: 8
-    label: 'chore'
+    label:
+      - 'chore'
+      - 'Chore'
+      - 'maintenance'
+  - title: ':ghost: Byla povýšena verze chart'
+    collapse-after: 8
+    label:
+      - 'chart'
+      - 'Chart'
 exclude-contributors:
   - 'action-user'
 change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
