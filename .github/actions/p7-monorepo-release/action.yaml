@@ -74,6 +74,7 @@ runs:
       with:
         composer-options: "--optimize-autoloader --prefer-dist"
       env:
+        COMPOSER_PROCESS_TIMEOUT: 1200
         # POZOR: Nepředáváme 'github-token', aby se to nebilo s COMPOSER_AUTH.
         COMPOSER_AUTH: >-
           {
