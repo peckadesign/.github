@@ -38,11 +38,6 @@ runs:
           *) echo "::error::Unknown version type: $VERSION"; exit 1 ;;
         esac
 
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ inputs.gh-token }}
-
     - name: Set Git user
       shell: bash
       run: |
@@ -58,18 +53,18 @@ runs:
           git config --global user.email "action@github.com"
         fi
 
-    - name: Set Git user
+    - name: Configure Composer auth
       shell: bash
       run: |
-        composer config -- github-oauth.github.com "${{ inputs.gh-token }}"
+        composer config --no-interaction --global github-oauth.github.com "${{ inputs.gh-token }}"
 
-    - name: Composer
+    - name: Composer Install
       uses: ramsey/composer-install@v2
       with:
-        composer-options: "--optimize-autoloader"
+        composer-options: "--optimize-autoloader --prefer-dist"
       env:
         COMPOSER_AUTH: >-
-          {"github-oauth": {"github.com": "${{ inputs.gh-token }}"}}
+          {"github-oauth": {"github.com": "${{ inputs.gh-token }}"}, "github-protocols": ["https"]}
 
     - name: Release
       shell: bash
