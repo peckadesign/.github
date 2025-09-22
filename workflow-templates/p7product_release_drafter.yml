@@ -1,5 +1,5 @@
-## Workflow pro P7products
-name: Publish release v2
+## Workflow for P7products - with Github authentication APP
+name: Creating a release for a new tag
 
 on:
   push:
@@ -12,11 +12,35 @@ concurrency:
 
 jobs:
   release:
-    uses: peckadesign/.github/.github/workflows/p7-release_drafter_on_call.yaml@v1
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
     name: Creating release
-    with:
-      tag: ${{ github.ref_name }}
-      latest: true
-      publish: true
-    secrets:
-      gh-token: # GITHUB Token. Monorepo usage note: For split sub-packages, you need to enable access scope "workflow (Update GitHub Action workflows)" for access token.
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.P7_CI_APP_ID }}
+          private-key: ${{ secrets.P7_CI_APP_PRIVATE_KEY }}
+          # optional: owner not needed IF the app has access to the repo running the workflow
+          #   if you get 'RequestError [HttpError]: Not Found 404', pass in owner
+          owner: ${{ github.repository_owner }}
+
+      - uses: peckadesign/.github/.github/actions/p7-release-drafter@v1
+        with:
+          tag: ${{ github.ref_name }}
+          publish: true
+          latest: true
+          gh-token: ${{ steps.app-token.outputs.token }}
+
+#  #deprecated
+#  release-with-gh-token:
+#    timeout-minutes: 10
+#    runs-on: ubuntu-latest
+#    name: Creating release
+#    steps:
+#      - uses: peckadesign/.github/.github/actions/p7-release-drafter@v1
+#        with:
+#          tag: ${{ github.ref_name }}
+#          publish: true
+#          latest: true
+#          gh-token: # GITHUB Token. Monorepo usage note: For split sub-packages, you need to enable access scope "workflow (Update GitHub Action workflows)" for access token.
