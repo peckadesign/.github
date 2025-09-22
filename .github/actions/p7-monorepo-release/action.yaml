@@ -73,16 +73,16 @@ runs:
       shell: bash
       run: |
         # 1) Composer: přidej HTTP Basic (vedle stávajícího github-oauth)
-        printf '%s\n' 'COMPOSER_AUTH={"github-oauth":{"github.com":"${{ github.gh-token }}"},"http-basic":{"github.com":{"username":"x-access-token","password":"${{ github.gh-token }}"}},"github-protocols":["https"]}' >> "$GITHUB_ENV"
+        printf '%s\n' 'COMPOSER_AUTH={"github-oauth":{"github.com":"${{ inputs.gh-token }}"},"http-basic":{"github.com":{"username":"x-access-token","password":"${{ inputs.gh-token }}"}},"github-protocols":["https"]}' >> "$GITHUB_ENV"
         # 2) it: přesměruj https/ssh GitHub URL na https s tokenem - preferuj lokálně, pokud jsme v GIT repo
         if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-          git config --local url."https://x-access-token:${{ github.gh-token }}@github.com/".insteadOf "https://github.com/"
-          git config --local url."https://x-access-token:${{ github.gh-token }}@github.com/".insteadOf "git@github.com:"
-          git config --local url."https://x-access-token:${{ github.gh-token }}@github.com/".insteadOf "ssh://git@github.com/"
+          git config --local url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "https://github.com/"
+          git config --local url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "git@github.com:"
+          git config --local url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "ssh://git@github.com/"
         else
-          git config --global url."https://x-access-token:${{ github.gh-token }}@github.com/".insteadOf "https://github.com/"
-          git config --global url."https://x-access-token:${{ github.gh-token }}@github.com/".insteadOf "git@github.com:"
-          git config --global url."https://x-access-token:${{ github.gh-token }}@github.com/".insteadOf "ssh://git@github.com/"
+          git config --global url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "https://github.com/"
+          git config --global url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "git@github.com:"
+          git config --global url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "ssh://git@github.com/"
         fi
 
     - name: Composer Install
