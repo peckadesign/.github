@@ -38,6 +38,23 @@ runs:
           *) echo "::error::Unknown version type: $VERSION"; exit 1 ;;
         esac
 
+    - name: Detect if repository is already checked out
+      id: detect
+      shell: bash
+      run: |
+        set -euo pipefail
+        has_checkout=false
+        if git -C "$GITHUB_WORKSPACE" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+          has_checkout=true
+        fi
+        echo "has_checkout=$has_checkout" >> "$GITHUB_OUTPUT"
+
+    - name: actions/checkout (only if missing)
+      if: ${{ steps.detect.outputs.has_checkout != 'true' }}
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
     - name: Set Git user
       shell: bash
       run: |
