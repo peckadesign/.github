@@ -53,18 +53,27 @@ runs:
           git config --global user.email "action@github.com"
         fi
 
-    - name: Configure Composer auth
+    - name: Configure Git auth for GitHub (fallback na git clone)
       shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.gh-token }}
       run: |
-        composer config --no-interaction --global github-oauth.github.com "${{ inputs.gh-token }}"
+        echo "::add-mask::${GH_TOKEN}"
+#         1) Composer: přidej HTTP Basic (vedle stávajícího github-oauth)
+        printf '%s\n' \
+              'COMPOSER_AUTH={"github-oauth":{"github.com":"'"${GH_TOKEN}"'"},"http-basic":{"github.com":{"username":"x-access-token","password":"'"${GH_TOKEN}"'"}}, "github-protocols":["https"]}' \
+              >> "$GITHUB_ENV"
+
+#        2) Git: přesměruj https/ssh GitHub URL na https s tokenem
+        git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+        git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "git@github.com:"
+        git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "ssh://git@github.com/"
+
 
     - name: Composer Install
       uses: ramsey/composer-install@v2
       with:
         composer-options: "--optimize-autoloader --prefer-dist"
-      env:
-        COMPOSER_AUTH: >-
-          {"github-oauth": {"github.com": "${{ inputs.gh-token }}"}, "github-protocols": ["https"]}
 
     - name: Release
       shell: bash
