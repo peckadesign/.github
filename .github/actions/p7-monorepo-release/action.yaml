@@ -69,6 +69,26 @@ runs:
           git config --global user.email "action@github.com"
         fi
 
+    - name: Configure Git auth for GitHub (fallback na git clone)
+      shell: bash
+      run: |
+        # 1) Composer: přidej HTTP Basic (vedle stávajícího github-oauth)
+        printf '%s\n' 'COMPOSER_AUTH={"github-oauth":{"github.com":"${{ inputs.gh-token }}"},"http-basic":{"github.com":{"username":"x-access-token","password":"${{ inputs.gh-token }}"}},"github-protocols":["https"]}' >> "$GITHUB_ENV"
+
+        # 2) Nastavení composer timeout na 20 minut
+        printf '%s\n' 'COMPOSER_PROCESS_TIMEOUT=1200' >> "$GITHUB_ENV"
+
+        # 3) Přesměruj https/ssh GitHub URL na https s tokenem - preferuj lokálně, pokud jsme v GIT repo
+        if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+          git config --local url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "https://github.com/"
+          git config --local url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "git@github.com:"
+          git config --local url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "ssh://git@github.com/"
+        else
+          git config --global url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "https://github.com/"
+          git config --global url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "git@github.com:"
+          git config --global url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "ssh://git@github.com/"
+        fi
+
     - name: Composer Install
       uses: ramsey/composer-install@v2
       with:
