@@ -22,7 +22,7 @@ runs:
       run: |
         DRYRUN="${{ inputs.dry-run }}"
         case "$DRYRUN" in
-          true|false) echo "valid=true" >> "$GITHUB_OUTPUT" ;;
+          true|false) ;;
           *) echo "::error::Invalid dry-run value: $DRYRUN (allowed: true|false)"; exit 1 ;;
         esac
 
@@ -33,10 +33,26 @@ runs:
         VERSION="${{ inputs.version }}"
         case "$VERSION" in
           patch) echo "stage=patch" >> "$GITHUB_OUTPUT" ;;
-          minor) echo "stage=release" >> "$GITHUB_OUTPUT" ;;
-          major) echo "stage=release" >> "$GITHUB_OUTPUT" ;;
+          minor|major) echo "stage=release" >> "$GITHUB_OUTPUT" ;;
           *) echo "::error::Unknown version type: $VERSION"; exit 1 ;;
         esac
+
+    - name: Detect if repository is already checked out
+      id: detect
+      shell: bash
+      run: |
+        set -euo pipefail
+        has_checkout=false
+        if git -C "$GITHUB_WORKSPACE" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+          has_checkout=true
+        fi
+        echo "has_checkout=$has_checkout" >> "$GITHUB_OUTPUT"
+
+    - name: actions/checkout (only if missing)
+      if: ${{ steps.detect.outputs.has_checkout != 'true' }}
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Set Git user
       shell: bash
@@ -53,18 +69,32 @@ runs:
           git config --global user.email "action@github.com"
         fi
 
-    - name: Configure Composer auth
+    - name: Configure Git auth for GitHub (fallback na git clone)
       shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.gh-token }}
       run: |
-        composer config --no-interaction --global github-oauth.github.com "${{ inputs.gh-token }}"
+        echo "::add-mask::${GH_TOKEN}"
+#       1) Composer: přidej HTTP Basic (vedle stávajícího github-oauth)
+        printf '%s\n' \
+              'COMPOSER_AUTH={"github-oauth":{"github.com":"'"${GH_TOKEN}"'"},"http-basic":{"github.com":{"username":"x-access-token","password":"'"${GH_TOKEN}"'"}}, "github-protocols":["https"]}' \
+              >> "$GITHUB_ENV"
+
+#       2) it: přesměruj https/ssh GitHub URL na https s tokenem - preferuj lokálně, pokud jsme v GIT repo
+        if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+          git config --local url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+          git config --local url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "git@github.com:"
+          git config --local url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "ssh://git@github.com/"
+        else
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "git@github.com:"
+          git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "ssh://git@github.com/"
+        fi
 
     - name: Composer Install
       uses: ramsey/composer-install@v2
       with:
         composer-options: "--optimize-autoloader --prefer-dist"
-      env:
-        COMPOSER_AUTH: >-
-          {"github-oauth": {"github.com": "${{ inputs.gh-token }}"}, "github-protocols": ["https"]}
 
     - name: Release
       shell: bash
