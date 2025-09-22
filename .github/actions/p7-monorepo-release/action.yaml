@@ -76,9 +76,7 @@ runs:
       run: |
         echo "::add-mask::${GH_TOKEN}"
 #       1) Composer: přidej HTTP Basic (vedle stávajícího github-oauth)
-        printf '%s\n' \
-              'COMPOSER_AUTH={"github-oauth":{"github.com":"'"${GH_TOKEN}"'"},"http-basic":{"github.com":{"username":"x-access-token","password":"'"${GH_TOKEN}"'"}}, "github-protocols":["https"]}' \
-              >> "$GITHUB_ENV"
+        printf '%s\n' 'COMPOSER_AUTH={"github-oauth":{"github.com":"'"${GH_TOKEN}"'"},"http-basic":{"github.com":{"username":"x-access-token","password":"'"${GH_TOKEN}"'"}}, "github-protocols":["https"]}' >> "$GITHUB_ENV"
 
 #       2) it: přesměruj https/ssh GitHub URL na https s tokenem - preferuj lokálně, pokud jsme v GIT repo
         if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
