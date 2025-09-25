@@ -3,7 +3,7 @@ description: Akce pro vytvoření release pro P7 produkty
 
 inputs:
   version:
-    description: 'Version (patch|minor|major)'
+    description: 'Version (patch|minor|major|first-minor)'
     required: true
   gh-token:
     required: true
@@ -33,7 +33,7 @@ runs:
         VERSION="${{ inputs.version }}"
         case "$VERSION" in
           patch) echo "stage=patch" >> "$GITHUB_OUTPUT" ;;
-          minor|major) echo "stage=release" >> "$GITHUB_OUTPUT" ;;
+          minor|major|first-minor) echo "stage=release" >> "$GITHUB_OUTPUT" ;;
           *) echo "::error::Unknown version type: $VERSION"; exit 1 ;;
         esac
 
@@ -103,10 +103,22 @@ runs:
             "github-protocols":["https"]
           }
 
+    - name: Compute version argument
+      id: varg
+      shell: bash
+      run: |
+        VERSION="${{ inputs.version }}"
+        if [ "$VERSION" = "first-minor" ]; then
+          echo "value=0.1.0" >> "$GITHUB_OUTPUT"
+        else
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Release
       shell: bash
       run: |
-        CMD="vendor/bin/monorepo-builder release ${{ inputs.version }} --stage ${{ steps.stage.outputs.stage }}"
+        VERSION_ARG="${{ steps.varg.outputs.value }}"
+        CMD="vendor/bin/monorepo-builder release $VERSION_ARG --stage ${{ steps.stage.outputs.stage }}"
         if [ "${{ inputs.dry-run }}" = "true" ]; then
           CMD="$CMD --dry-run"
         fi
