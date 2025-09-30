@@ -72,36 +72,76 @@ runs:
     - name: Configure Git auth for GitHub (fallback na git clone)
       shell: bash
       run: |
+        # pro jistotu zamaskujeme token v logu
+        echo "::add-mask::${{ inputs.gh-token }}"
+
         # 1) Composer: přidej HTTP Basic (vedle stávajícího github-oauth)
         printf '%s\n' 'COMPOSER_AUTH={"github-oauth":{"github.com":"${{ inputs.gh-token }}"},"http-basic":{"github.com":{"username":"x-access-token","password":"${{ inputs.gh-token }}"}},"github-protocols":["https"]}' >> "$GITHUB_ENV"
 
         # 2) Nastavení composer timeout na 20 minut
         printf '%s\n' 'COMPOSER_PROCESS_TIMEOUT=1200' >> "$GITHUB_ENV"
 
-        # 3) Přesměruj https/ssh GitHub URL na https s tokenem - preferuj lokálně, pokud jsme v GIT repo
-        if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-          git config --local url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "https://github.com/"
-          git config --local url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "git@github.com:"
-          git config --local url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "ssh://git@github.com/"
-        else
-          git config --global url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "https://github.com/"
-          git config --global url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "git@github.com:"
-          git config --global url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "ssh://git@github.com/"
-        fi
+        # 3) Přesměruj https/ssh GitHub URL na https s tokenem
+        git config --local url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "https://github.com/"
+        git config --local url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "git@github.com:"
+        git config --local url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "ssh://git@github.com/"
+        # OAuth token pro GitHub
+        composer config --local --auth github-oauth.github.com "${{ inputs.gh-token }}"
+        # HTTP Basic na github.com (x-access-token / <token>)
+        composer config --local --auth http-basic.github.com x-access-token "${{ inputs.gh-token }}"
+        # Používej pouze HTTPS protokoly
+        composer config --local github-protocols https
 
-    - name: Composer Install
-      uses: ramsey/composer-install@v2
+    - name: Zjisti cesty k Composer cache
+      id: compcache
+      shell: bash
+      run: |
+        echo "files=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+        echo "repo=$(composer config cache-repo-dir)"  >> "$GITHUB_OUTPUT"
+        echo "vcs=$(composer config cache-vcs-dir)"    >> "$GITHUB_OUTPUT"
+
+    # --- cache files (balíčky) ---
+    - name: Cache composer files
+      id: cache-files
+      uses: actions/cache@v4
       with:
-        composer-options: "--optimize-autoloader --prefer-dist"
-      env:
-        COMPOSER_PROCESS_TIMEOUT: 1200
-        # POZOR: Nepředáváme 'github-token', aby se to nebilo s COMPOSER_AUTH.
-        COMPOSER_AUTH: >-
-          {
-            "github-oauth":{"github.com":"${{ inputs.gh-token }}"},
-            "http-basic":{"github.com":{"username":"x-access-token","password":"${{ inputs.gh-token }}"}},
-            "github-protocols":["https"]
-          }
+        path: ${{ steps.compcache.outputs.files }}
+        key: composer-files-${{ runner.os }}-php81-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          composer-files-${{ runner.os }}-
+
+    # --- cache repo (metadata) ---
+    - name: Cache composer repo metadata
+      id: cache-repo
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.compcache.outputs.repo }}
+        key: composer-repo-${{ runner.os }}-php81-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          composer-repo-${{ runner.os }}-
+
+    # --- cache VCS klony ---
+    - name: Cache composer VCS
+      id: cache-vcs
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.compcache.outputs.vcs }}
+        key: composer-vcs-${{ runner.os }}-php81-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          composer-vcs-${{ runner.os }}-
+
+    - name: Warm up composer caches (install bez skriptů)
+      shell: bash
+      run: |
+        composer install --no-interaction --no-progress --no-scripts --prefer-dist
+
+    # Doplňkový warm-up čistě pro metadata resolveru – nic nepřepíše
+    - name: Warm up metadata (dry-run update)
+      shell: bash
+      if: |
+        steps.cache-repo.outputs.cache-hit  != 'true'
+      run: |
+        composer update --dry-run --no-interaction --no-ansi
 
     - name: Compute version argument
       id: varg
