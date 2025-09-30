@@ -59,10 +59,10 @@ runs:
       run: |
         # Ošetříme safe.directory (aby Git nehlásil dubious ownership)
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
-        # Pokud jsme uvnitř repozitáře, použijeme --local
+        # Pokud jsme uvnitř repozitáře, použijeme
         if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-          git config --local user.name "${{ github.actor }}"
-          git config --local user.email "action@github.com"
+          git config user.name "${{ github.actor }}"
+          git config user.email "action@github.com"
         else
           # Fallback – použijeme globální konfiguraci
           git config --global user.name "${{ github.actor }}"
@@ -82,15 +82,15 @@ runs:
         printf '%s\n' 'COMPOSER_PROCESS_TIMEOUT=1200' >> "$GITHUB_ENV"
 
         # 3) Přesměruj https/ssh GitHub URL na https s tokenem
-        git config --local url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "https://github.com/"
-        git config --local url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "git@github.com:"
-        git config --local url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "ssh://git@github.com/"
+        git config url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "https://github.com/"
+        git config url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "git@github.com:"
+        git config url."https://x-access-token:${{ inputs.gh-token }}@github.com/".insteadOf "ssh://git@github.com/"
         # OAuth token pro GitHub
-        composer config --local --auth github-oauth.github.com "${{ inputs.gh-token }}"
+        composer config --auth github-oauth.github.com "${{ inputs.gh-token }}"
         # HTTP Basic na github.com (x-access-token / <token>)
-        composer config --local --auth http-basic.github.com x-access-token "${{ inputs.gh-token }}"
+        composer config --auth http-basic.github.com x-access-token "${{ inputs.gh-token }}"
         # Používej pouze HTTPS protokoly
-        composer config --local github-protocols https
+        composer config github-protocols https
 
     - name: Zjisti cesty k Composer cache
       id: compcache
