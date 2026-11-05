@@ -46,3 +46,6 @@ jobs:
         with:
           version: ${{ inputs.version }}
           gh-token: ${{ steps.app-token.outputs.token }}
+          # volitelné – jen pokud projekt používá Composer repository Pecore
+          pecore-username: ${{ vars.PECORE_CI_USERNAME }}
+          pecore-password: ${{ secrets.PECORE_CI_PASSWORD }}
